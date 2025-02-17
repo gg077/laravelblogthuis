@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class UserController extends Controller
@@ -110,9 +111,22 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        //
+        $user = User::with('roles', 'photo')->findOrFail($id);
+        $roles = Role::pluck('name', 'id')->all();
+        $photoDetails = ['exists' => false, 'filesize' => 0, 'width' => 'N/A', 'height' => 'N/A', 'extension' => ''];
+        // Controleer of er een foto is en of deze bestaat op de 'public' disk
+        if ($user->photo && Storage::disk('public')->exists($user->photo->path)) {
+            $photoDetails['exists'] = true;
+            $photoDetails['filesize'] = round(Storage::disk('public')->size($user->photo->path) / 1024, 2);
+            $photoPath = Storage::disk('public')->path($user->photo->path);
+            $dimensions = getimagesize($photoPath);
+            $photoDetails['width'] = $dimensions[0] ?? 'N/A';
+            $photoDetails['height'] = $dimensions[1] ?? 'N/A';
+            $photoDetails['extension'] = Str::upper(pathinfo($user->photo->path, PATHINFO_EXTENSION));
+        }
+        return view('backend.users.edit', compact('user', 'roles', 'photoDetails'));
     }
 
     /**
