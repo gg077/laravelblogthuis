@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Photo;
 use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -31,7 +32,7 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'is_active' => fake()->boolean(), // Willekeurig true/false (1 of 0)
-            'photo_id' => 1, // Nog geen model voor photo, dus blijft 1 momenteel
+            'photo_id' => Photo::InRandomOrder()->first()->id,
         ];
     }
 

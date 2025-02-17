@@ -26,7 +26,22 @@
             @foreach($users as $user)
                 <tr>
                     <td>{{$user->id}}</td>
-                    <td>{{$user->photo_id}}</td>
+                    <td>
+                        @if($user->photo && file_exists(public_path('assets/img/'.$user->photo->path)))
+                            <img
+                                src="{{asset('assets/img/'.$user->photo->path)}}"
+                                alt="{{$user->photo->alternate_text ?? $user->name}}"
+                                class="img-fluid rounded object-fit-cover" style="width: 40px; height: 40px;"
+                            >
+                        @else
+                            <img
+                                src="https://placehold.co/40"
+                                alt="No Image"
+                                class="img-fluid rounded object-fit-cover" style="width: 40px; height: 40px;"
+                            >
+                        @endif
+
+                    </td>
                     <td>{{$user->name}}</td>
                     <td>{{$user->email}}</td>
                     <td>

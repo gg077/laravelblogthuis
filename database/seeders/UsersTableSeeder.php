@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Photo;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -21,7 +22,7 @@ class UsersTableSeeder extends Seeder
             'is_active'=>1,
             'email'=>'team@gmail.com',
             'email_verified_at'=>now(),
-            'photo_id'=>1,
+            'photo_id'=> Photo::InRandomOrder()->first()->id,
             'password'=>Hash::make('12345678'),
             'created_at'=>now(),
             'updated_at'=>now(),

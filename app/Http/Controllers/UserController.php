@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Photo;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
+
+    protected $folder='users';
     /**
      * Display a listing of the resource.
      */
@@ -57,11 +62,26 @@ class UserController extends Controller
             'is_active' => 'required|in:0,1',
             'role_id'=>'required|array|exists:roles,id',
             'password' => 'required|min:6',
-//           'photo_id'=>'nullable|image'
+            'photo_id'=>'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], $messages);
 
         //paswoord hashen
-        $validatedData['password'] = bcrypt($validatedData['password']);
+        $validatedData['password'] = hash::make($validatedData['password']);
+
+        // controlleeer of er photo is geupload en sla deze op
+        if ($request->hasFile('photo_id')) {
+            $file = $request->file('photo_id');
+            $uniqueName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $filePath = $this->folder . '/' . $uniqueName;
+
+            // opslaan in het public path onder users
+            $file->storeAs('', $filePath, 'public');
+            $photo = Photo::create([
+                'path' => $filePath,
+                'alternate_text' => $validatedData['name']
+            ]);
+            $validatedData['photo_id'] = $photo->id;
+        }
 
         //gebruiker aanmaken
         $user = User::create([
@@ -69,6 +89,7 @@ class UserController extends Controller
             'email' => $validatedData['email'],
             'is_active' => $validatedData['is_active'],
             'password' => $validatedData['password'],
+            'photo_id' => $validatedData['photo_id'],
         ]);
         //array van rollen wegschrijven naar de role_user tussentabel
         //sync doet een detach en daarna een attach in 1 keer
